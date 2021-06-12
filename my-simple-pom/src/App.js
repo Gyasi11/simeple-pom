@@ -1,25 +1,46 @@
 import logo from './logo.svg';
 import './App.css';
+import React, {useState, useEffect } from 'react'
 
-function App() {
+const PomodoroTimer = () => {
+
+  // change variable names
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+
+  function pomodoroToggle(){
+    setIsActive(!isActive)
+  }
+
+  function resetPomodoro(){
+    setSeconds(0)
+    setIsActive(false)
+  }
+
+  useEffect(() => {
+    let interval = null;
+    if(isActive) {
+      interval = setInterval(() => {
+        setSeconds(seconds => seconds + 1);
+      }, 1000);
+    } else if(!isActive && seconds !== 0) {
+      clearInterval(interval)
+    }
+
+    return () => clearInterval(interval)
+  }, [isActive, seconds])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <div>
+      {seconds}s
+      </div>
+      <div>
+        <button onClick={pomodoroToggle}>Start</button>
+        <button onClick={resetPomodoro}>Reset</button>
+      </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default PomodoroTimer;
