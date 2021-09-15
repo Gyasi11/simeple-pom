@@ -9,6 +9,8 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import React, { useState, useEffect } from 'react'
 import Complete from './Complete';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import StopIcon from '@material-ui/icons/Stop';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -39,8 +41,34 @@ const PomodoroTimer = () => {
   }
   let pomodoroTime = 120
 
-  function pomodoroToggle() {
-    setIsActive(!isActive)
+
+  function startPomodoroTimer() {
+
+    let interval = null;
+    let subtractedTime = 0.03703704
+    if (focusTime > 45) {
+      let val = focusTime / 45
+      subtractedTime = subtractedTime / val
+    } else if (focusTime < 45) {
+      let val = 45 / focusTime
+      subtractedTime = subtractedTime * val
+      console.log(subtractedTime)
+    }
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds(seconds => seconds + 1);
+        setProgress(progress => progress - subtractedTime);
+      }, 1000);
+
+      if (seconds > 2700) {
+        resetPomodoro()
+      }
+    } else if (!isActive && seconds !== 0) {
+      clearInterval(interval)
+    }
+    return () => clearInterval(interval)
+    // setProgress(focusTime)
+    // setProgress(progress => progress - 0.03703704);
   }
 
   function resetPomodoro() {
@@ -49,19 +77,20 @@ const PomodoroTimer = () => {
     setIsActive(false)
   }
 
-  //
-  //function 
 
   const classes = useStyles();
 
   const [focusTime, setTime] = useState('');
-  const [shortBreakInterval, setShortBreakInterval] = useState('')  
-  const [longBreakInterval, setLongBreakInterval] = useState('')  
+  const [shortBreakInterval, setShortBreakInterval] = useState('')
+  const [longBreakInterval, setLongBreakInterval] = useState('')
   const [disableLongBreak, setDisableLongBreak] = useState(false)
-  const [disableShortBreak, setDisableShortBreak] =useState(false) 
+  const [disableShortBreak, setDisableShortBreak] = useState(false)
 
   const handleChangeFocusTime = (event) => {
     setTime(event.target.value)
+    setIsActive(true)
+    console.log(isActive)
+    console.log(focusTime)
   }
 
   const handleChangeShortBreakInterval = (event) => {
@@ -74,83 +103,77 @@ const PomodoroTimer = () => {
     setLongBreakInterval(event.target.value)
   }
 
-  useEffect(() => {
-    let interval = null;
-    if (isActive) {
-      interval = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
-        setProgress(progress => progress - 0.03703704);
-      }, 1000);
-
-      if (seconds > 2700) {
-        resetPomodoro()
-      }
-    } else if (!isActive && seconds !== 0) {
-      clearInterval(interval)
-    }
-    return () => clearInterval(interval)
-  }, [isActive, seconds, progress])
 
   return (
     <div>
-    <div className="focus-time-container">
-    <div>
-      <FormControl className={classes.formControl}>
-        <InputLabel>Focus Time</InputLabel>
-        <Select 
-        value={focusTime}
-        onChange={handleChangeFocusTime}
-        >
-          <MenuItem value={30}>30</MenuItem>
-          <MenuItem value={45}>45</MenuItem>
-          <MenuItem value={60}>60</MenuItem>
-        </Select>
-      </FormControl>
-    </div>
-    <div>
-    <FormControl className={classes.formControl}>
-        <InputLabel>Short Break</InputLabel>
-        <Select
-        disabled={disableShortBreak}
-        value={shortBreakInterval}
-        onChange={handleChangeShortBreakInterval}
-        >
-          <MenuItem value={30}>5</MenuItem>
-          <MenuItem value={45}>10</MenuItem>
-          <MenuItem value={60}>15</MenuItem>
-        </Select>
-      </FormControl>
-    </div>
-    <div>
-    <FormControl className={classes.formControl}>
-        <InputLabel>Long Break</InputLabel>
-        <Select
-        disabled={disableLongBreak}
-        value={longBreakInterval}
-        onChange={handleChangeLongBreakInterval}
-        >
-          <MenuItem value={30}>30</MenuItem>
-          <MenuItem value={45}>45</MenuItem>
-          <MenuItem value={60}>60</MenuItem>
-        </Select>
-      </FormControl>
-    </div>
-  </div>
-
-    <div className="Container">
-
-      <div className="ProgressbarContainer">
-        <CircularProgress size={500} variant="determinate" value={progress} />
+      <div className="focus-time-container">
+        <div className="dropdown-container">
+          <div>
+            <FormControl className={classes.formControl}>
+              <InputLabel>Focus Time</InputLabel>
+              <Select
+                value={focusTime}
+                onChange={handleChangeFocusTime}
+              >
+                <MenuItem value={1}>30</MenuItem>
+                <MenuItem value={45}>45</MenuItem>
+                <MenuItem value={60}>60</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div>
+            <FormControl className={classes.formControl}>
+              <InputLabel>Short Break</InputLabel>
+              <Select
+                disabled={disableShortBreak}
+                value={shortBreakInterval}
+                onChange={handleChangeShortBreakInterval}
+              >
+                <MenuItem value={30}>5</MenuItem>
+                <MenuItem value={45}>10</MenuItem>
+                <MenuItem value={60}>15</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div>
+            <FormControl className={classes.formControl}>
+              <InputLabel>Long Break</InputLabel>
+              <Select
+                disabled={disableLongBreak}
+                value={longBreakInterval}
+                onChange={handleChangeLongBreakInterval}
+              >
+                <MenuItem value={30}>30</MenuItem>
+                <MenuItem value={45}>45</MenuItem>
+                <MenuItem value={60}>60</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        </div>
+        <div className="start-btn-container">
+          <button id="start" onClick={startPomodoroTimer}>Start</button>
+        </div>
       </div>
-      <div>
 
-        <h1 className="Time">{seconds}s</h1>
+
+
+
+      <div className="Container">
+
+        <div className="ProgressbarContainer">
+          <CircularProgress size={500} variant="determinate" value={progress} />
+        </div>
+        <div>
+
+          <h1 className="Time">{seconds}s</h1>
+        </div>
+       
       </div>
+
       <div className="ButtonContainer">
-        <button onClick={pomodoroToggle}>Start</button>
-        <button onClick={resetPomodoro}>Reset</button>
-      </div>
-    </div>
+          <button className="action-buttons" onClick={resetPomodoro}><PlayArrowIcon/></button>
+          <button className="action-buttons" onClick={resetPomodoro}><StopIcon/></button>
+        </div>
     </div>
   )
 }
